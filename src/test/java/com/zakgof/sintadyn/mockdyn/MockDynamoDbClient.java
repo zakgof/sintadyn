@@ -1,4 +1,4 @@
-package com.zakgof.sintadyn;
+package com.zakgof.sintadyn.mockdyn;
 
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -8,6 +8,7 @@ import software.amazon.awssdk.services.dynamodb.model.BatchGetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.BatchGetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.BatchWriteItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.Condition;
 import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.CreateTableResponse;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
@@ -19,6 +20,8 @@ import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -133,5 +136,14 @@ public class MockDynamoDbClient implements DynamoDbClient {
         AttributeValue skValue = key.get(table.getSk());
         table.delete(pkValue, skValue);
         return DeleteItemResponse.builder().build();
+    }
+
+    @Override
+    public QueryResponse query(QueryRequest queryRequest) throws AwsServiceException, SdkClientException {
+        MockDynamoDbTable table = table(queryRequest.tableName());
+        Map<String, Condition> keyConditions = queryRequest.keyConditions();
+
+        // TODO
+        return null;
     }
 }

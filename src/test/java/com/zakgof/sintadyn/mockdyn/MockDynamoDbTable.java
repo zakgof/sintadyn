@@ -1,4 +1,4 @@
-package com.zakgof.sintadyn;
+package com.zakgof.sintadyn.mockdyn;
 
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;

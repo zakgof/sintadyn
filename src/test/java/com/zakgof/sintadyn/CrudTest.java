@@ -1,5 +1,7 @@
 package com.zakgof.sintadyn;
 
+import com.zakgof.sintadyn.mockdyn.MockDynamoDbClient;
+import com.zakgof.sintadyn.model.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CrudTest {
 
     private static final MockDynamoDbClient dynamoDB = new MockDynamoDbClient();
-    private static final Type<String, Book> bookType = Sintadyn.type(Book.class);
+    private static final Node<String, Book> BOOK_NODE = Sintadyn.node(Book.class);
     private static final Sintadyn sintadyn = Sintadyn.builder().build();
 
     private static final Book QUIXOTE = new Book("9783161484100", "Don Quixote");
@@ -29,7 +31,7 @@ class CrudTest {
 
         sintadyn.createTable(dynamoDB);
 
-        bookType.put()
+        BOOK_NODE.put()
                 .values(List.of(QUIXOTE, HOBBIT))
                 .execute(sintadyn, dynamoDB);
 
@@ -38,7 +40,7 @@ class CrudTest {
 
     @Test
     void create() {
-        bookType.put()
+        BOOK_NODE.put()
                 .value(KOBZAR)
                 .execute(sintadyn, dynamoDB);
 
@@ -47,7 +49,7 @@ class CrudTest {
 
     @Test
     void createBatch() {
-        bookType.put()
+        BOOK_NODE.put()
                 .values(List.of(HOBBIT2, KOBZAR))
                 .execute(sintadyn, dynamoDB);
 
@@ -57,7 +59,7 @@ class CrudTest {
 
     @Test
     void read() {
-        Book book = bookType.get()
+        Book book = BOOK_NODE.get()
                 .key(HOBBIT.getIsbn())
                 .execute(sintadyn, dynamoDB);
 
@@ -66,7 +68,7 @@ class CrudTest {
 
     @Test
     void readBatch() {
-        List<Book> books = bookType.get()
+        List<Book> books = BOOK_NODE.get()
                 .keys(List.of(HOBBIT.getIsbn(), QUIXOTE.getIsbn()))
                 .execute(sintadyn, dynamoDB);
 
@@ -75,7 +77,7 @@ class CrudTest {
 
     @Test
     void readAll() {
-        List<Book> books = bookType.get()
+        List<Book> books = BOOK_NODE.get()
                 .all()
                 .execute(sintadyn, dynamoDB);
 
@@ -84,7 +86,7 @@ class CrudTest {
 
     @Test
     void update() {
-        bookType.put()
+        BOOK_NODE.put()
                 .value(HOBBIT2)
                 .execute(sintadyn, dynamoDB);
 
@@ -93,7 +95,7 @@ class CrudTest {
 
     @Test
     void delete() {
-        bookType.delete()
+        BOOK_NODE.delete()
                 .key(HOBBIT.getIsbn())
                 .execute(sintadyn, dynamoDB);
 
@@ -102,7 +104,7 @@ class CrudTest {
 
     @Test
     void deleteBatch() {
-        bookType.delete()
+        BOOK_NODE.delete()
                 .keys(List.of(HOBBIT.getIsbn(), QUIXOTE.getIsbn()))
                 .execute(sintadyn, dynamoDB);
 
@@ -110,7 +112,7 @@ class CrudTest {
     }
 
     private void assertBooks(Book... books) {
-        Set<Book> actualBooks = new HashSet<>(bookType.get()
+        Set<Book> actualBooks = new HashSet<>(BOOK_NODE.get()
                 .keys(List.of(QUIXOTE.getIsbn(), HOBBIT.getIsbn(), KOBZAR.getIsbn()))
                 .execute(sintadyn, dynamoDB));
 

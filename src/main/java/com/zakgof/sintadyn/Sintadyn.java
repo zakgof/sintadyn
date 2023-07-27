@@ -1,8 +1,12 @@
 package com.zakgof.sintadyn;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.BillingMode;
 import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndex;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.Projection;
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
 public class Sintadyn {
 
@@ -18,12 +22,12 @@ public class Sintadyn {
         this.entityType = entityType;
     }
 
-    public static <K, V> Type<K, V> type(Class<V> valueClass) {
-        return new SintaType<>(valueClass);
+    public static <K, V> Node<K, V> node(Class<V> valueClass) {
+        return new SintaNode<>(valueClass);
     }
 
-    public static <K1, V1, K2, V2> ManyToMany<K1, V1, K2, V2> manyToMany(Type<K1, V1> fromType, Type<K2, V2> toType) {
-        return null;
+    public static <K1, V1, K2, V2, R> ManyToMany<K1, V1, K2, V2, R> manyToMany(Node<K1, V1> fromNode, Node<K2, V2> toNode, Class<R> roleClass) {
+        return new SintaManyToMany<>(fromNode, toNode, roleClass);
     }
 
     public static Sintadyn.Builder builder() {
@@ -50,11 +54,22 @@ public class Sintadyn {
     @SuppressWarnings("unchecked")
     public void createTable(DynamoDbClient dynamoDB) {
         dynamoDB.createTable(builder -> builder.tableName(table)
+                .billingMode(BillingMode.PAY_PER_REQUEST) // TODO: configurable
+                .attributeDefinitions(adbuilder -> adbuilder
+                                .attributeName(pk)
+                                .attributeType(ScalarAttributeType.S),
+                        adbuilder -> adbuilder
+                                .attributeName(sk)
+                                .attributeType(ScalarAttributeType.S),
+                        adbuilder -> adbuilder
+                                .attributeName(entityType)
+                                .attributeType(ScalarAttributeType.S))
                 .keySchema(ksebuilder -> ksebuilder.attributeName(pk).keyType(KeyType.HASH),
                         ksebuilder -> ksebuilder.attributeName(sk).keyType(KeyType.RANGE)
                 )
                 .globalSecondaryIndexes(GlobalSecondaryIndex.builder()
                         .indexName(entityType)
+                        .projection(Projection.builder().projectionType(ProjectionType.ALL).build()) // TODO: review
                         .keySchema(ksebuilder -> ksebuilder.attributeName(entityType).keyType(KeyType.HASH),
                                 ksebuilder -> ksebuilder.attributeName(sk).keyType(KeyType.RANGE))
                         .build())
